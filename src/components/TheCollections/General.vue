@@ -54,6 +54,7 @@ License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 					<TaskBody v-for="task in sort(calendar.filteredTasks, sortOrder, sortDirection)"
 						:key="task.id"
 						:task="task"
+						:collection-string="collectionId"
 					/>
 				</task-drag-container>
 				<LoadCompletedButton v-if="collectionId === 'completed'" :calendar="calendar" />

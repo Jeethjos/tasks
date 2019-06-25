@@ -36,6 +36,7 @@ License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 					<TaskBody v-for="task in sort(day.tasks, sortOrder, sortDirection)"
 						:key="task.id"
 						:task="task"
+						:collection-string="'week-' + day.diff"
 					/>
 				</task-drag-container>
 			</div>

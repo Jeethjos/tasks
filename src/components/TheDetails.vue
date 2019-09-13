@@ -21,7 +21,7 @@ License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 <template>
 	<div class="content-wrapper">
-		<div v-if="task!=undefined"
+		<div v-if="task"
 			:class="{'disabled': task.calendar.readOnly}"
 			class="flex-container"
 		>
@@ -340,7 +340,8 @@ License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 			</div>
 		</div>
 		<div v-else class="notice">
-			<span>{{ $t('tasks', 'Task not found!') }}</span>
+			<span v-if="loading">{{ $t('tasks', 'Loading task from server.') }}</span>
+			<span v-else>{{ $t('tasks', 'Task not found!') }}</span>
 		</div>
 	</div>
 </template>
@@ -500,6 +501,7 @@ export default {
 	},
 	data: function() {
 		return {
+			loading: false,
 			edit: '',
 			tmpTask: {
 				summary: '',
@@ -572,8 +574,18 @@ export default {
 		},
 		...mapGetters({
 			writableCalendars: 'getSortedWritableCalendars',
-			task: 'getTaskByRoute'
+			task: 'getTaskByRoute',
+			calendar: 'getCalendarByRoute',
 		}),
+	},
+
+	watch: {
+		$route: 'loadTask',
+		calendar: 'loadTask',
+	},
+
+	created() {
+		this.loadTask()
 	},
 
 	/**
@@ -615,7 +627,22 @@ export default {
 			'toggleAllDay',
 			'moveTask',
 			'setClassification',
+			'getTaskByUri',
 		]),
+
+		loadTask: function() {
+			if ((this.task === undefined || this.task === null) && this.calendar) {
+				this.loading = true
+				this.getTaskByUri({ calendar: this.calendar, taskUri: this.$route.params.taskId })
+					.then((response) => {
+						this.loading = false
+					})
+					.catch((error) => {
+						this.loading = false
+						throw error
+					})
+			}
+		},
 
 		removeTask: function() {
 			this.deleteTask({ task: this.task, dav: true })

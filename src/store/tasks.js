@@ -721,6 +721,33 @@ const actions = {
 	},
 
 	/**
+	 * Retrieves the task with the given uri from the given calendar
+	 * and commits the result
+	 *
+	 * @param {Object} context The store mutations
+	 * @param {Object} data Destructuring object
+	 * @param {Calendar} data.calendar The calendar
+	 * @param {String} data.taskUri The uri of the requested task
+	 * @returns {Promise}
+	 */
+	async getTaskByUri(context, { calendar, taskUri }) {
+		calendar.dav.find(taskUri)
+			.then((item) => {
+				const task = new Task(item.data, calendar)
+				Vue.set(task, 'dav', item)
+				const tasks = [task]
+				if (task.related) {
+					const parent = context.getters.getTaskByUid(task.related)
+					// If parent is not found, we should also try to load it from the server
+					context.commit('addTaskToParent', { task: task, parent: parent })
+				}
+				context.commit('appendTasksToCalendar', { calendar, tasks })
+				context.commit('appendTasks', tasks)
+			})
+			.catch((error) => { throw error })
+	},
+
+	/**
 	 * Toggles the completed state of a task
 	 *
 	 * @param {Object} context The store context

@@ -27,6 +27,7 @@ import { isParentInList, momentToICALTime } from './storeHelper'
 import ICAL from 'ical.js'
 import TaskStatus from '../models/taskStatus'
 import router from '../components/TheRouter'
+import { findVTODObyUid } from './cdav-requests'
 
 Vue.use(Vuex)
 
@@ -732,17 +733,55 @@ const actions = {
 	 */
 	async getTaskByUri(context, { calendar, taskUri }) {
 		calendar.dav.find(taskUri)
-			.then((item) => {
+			.then(async(item) => {
 				const task = new Task(item.data, calendar)
 				Vue.set(task, 'dav', item)
-				const tasks = [task]
 				if (task.related) {
-					const parent = context.getters.getTaskByUid(task.related)
-					// If parent is not found, we should also try to load it from the server
+					let parent = context.getters.getTaskByUid(task.related)
+					// If the parent is not found locally, we try to get it from the server.
+					if (!parent) {
+						parent = await context.dispatch('getTaskByUid', { calendar: calendar, taskUid: task.related })
+					}
 					context.commit('addTaskToParent', { task: task, parent: parent })
 				}
-				context.commit('appendTasksToCalendar', { calendar, tasks })
-				context.commit('appendTasks', tasks)
+				context.commit('appendTasksToCalendar', { calendar: calendar, tasks: [task] })
+				context.commit('appendTasks', [task])
+			})
+			.catch((error) => { throw error })
+	},
+
+	/**
+	 * Retrieves the task with the given uid from the given calendar
+	 * and commits the result
+	 *
+	 * @param {Object} context The store mutations
+	 * @param {Object} data Destructuring object
+	 * @param {Calendar} data.calendar The calendar
+	 * @param {String} data.taskUid The uid of the requested task
+	 * @returns {Promise}
+	 */
+	async getTaskByUid(context, { calendar, taskUid }) {
+		return findVTODObyUid(calendar, taskUid)
+			.then(async(response) => {
+				// We expect to only get zero or one task when we query by UID.
+				if (response.length) {
+					const task = new Task(response[0].data, calendar)
+					Vue.set(task, 'dav', response[0])
+					if (task.related) {
+						let parent = context.getters.getTaskByUid(task.related)
+						// If the parent is not found locally, we try to get it from the server.
+						if (!parent) {
+							parent = await context.dispatch('getTaskByUid', { calendar: calendar, taskUid: task.related })
+						}
+						context.commit('addTaskToParent', { task: task, parent: parent })
+					}
+					context.commit('appendTasksToCalendar', { calendar: calendar, tasks: [task] })
+					context.commit('appendTasks', [task])
+					return task
+				} else {
+					console.debug('no task')
+					return null
+				}
 			})
 			.catch((error) => { throw error })
 	},

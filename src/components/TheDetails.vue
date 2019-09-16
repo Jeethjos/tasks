@@ -576,12 +576,13 @@ export default {
 			writableCalendars: 'getSortedWritableCalendars',
 			task: 'getTaskByRoute',
 			calendar: 'getCalendarByRoute',
+			calendars: 'getSortedCalendars',
 		}),
 	},
 
 	watch: {
 		$route: 'loadTask',
-		calendar: 'loadTask',
+		calendars: 'loadTask',
 	},
 
 	created() {
@@ -630,17 +631,30 @@ export default {
 			'getTaskByUri',
 		]),
 
-		loadTask: function() {
-			if ((this.task === undefined || this.task === null) && this.calendar) {
-				this.loading = true
-				this.getTaskByUri({ calendar: this.calendar, taskUri: this.$route.params.taskId })
-					.then((response) => {
-						this.loading = false
-					})
-					.catch((error) => {
-						this.loading = false
-						throw error
-					})
+		async loadTask() {
+			if (this.task === undefined || this.task === null) {
+				const calendars = this.calendar ? [this.calendar] : this.calendars
+				for (const calendar of calendars) {
+					this.loading = true
+					const found = await this.getTaskByUri({ calendar: calendar, taskUri: this.$route.params.taskId })
+						.then((response) => {
+							if (response) {
+								this.loading = false
+								return true
+							} else {
+								return false
+							}
+						})
+						.catch((error) => {
+							console.debug(error)
+							return false
+						})
+					// If we found the task, we don't need to query the other calendars.
+					if (found) {
+						break
+					}
+				}
+				this.loading = false
 			}
 		},
 

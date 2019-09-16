@@ -732,22 +732,29 @@ const actions = {
 	 * @returns {Promise}
 	 */
 	async getTaskByUri(context, { calendar, taskUri }) {
-		calendar.dav.find(taskUri)
+		return calendar.dav.find(taskUri)
 			.then(async(item) => {
-				const task = new Task(item.data, calendar)
-				Vue.set(task, 'dav', item)
-				if (task.related) {
-					let parent = context.getters.getTaskByUid(task.related)
-					// If the parent is not found locally, we try to get it from the server.
-					if (!parent) {
-						parent = await context.dispatch('getTaskByUid', { calendar: calendar, taskUid: task.related })
+				if (item) {
+					const task = new Task(item.data, calendar)
+					Vue.set(task, 'dav', item)
+					if (task.related) {
+						let parent = context.getters.getTaskByUid(task.related)
+						// If the parent is not found locally, we try to get it from the server.
+						if (!parent) {
+							parent = await context.dispatch('getTaskByUid', { calendar: calendar, taskUid: task.related })
+						}
+						context.commit('addTaskToParent', { task: task, parent: parent })
 					}
-					context.commit('addTaskToParent', { task: task, parent: parent })
+					context.commit('appendTasksToCalendar', { calendar: calendar, tasks: [task] })
+					context.commit('appendTasks', [task])
+					return task
+				} else {
+					return null
 				}
-				context.commit('appendTasksToCalendar', { calendar: calendar, tasks: [task] })
-				context.commit('appendTasks', [task])
 			})
-			.catch((error) => { throw error })
+			.catch((error) => {
+				console.debug(error)
+			})
 	},
 
 	/**

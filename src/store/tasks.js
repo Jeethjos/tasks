@@ -753,7 +753,7 @@ const actions = {
 				}
 			})
 			.catch((error) => {
-				console.debug(error)
+				throw error
 			})
 	},
 

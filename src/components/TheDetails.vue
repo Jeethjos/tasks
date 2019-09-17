@@ -636,22 +636,22 @@ export default {
 				const calendars = this.calendar ? [this.calendar] : this.calendars
 				for (const calendar of calendars) {
 					this.loading = true
-					const found = await this.getTaskByUri({ calendar: calendar, taskUri: this.$route.params.taskId })
-						.then((response) => {
-							if (response) {
-								this.loading = false
-								return true
-							} else {
-								return false
-							}
-						})
-						.catch((error) => {
-							console.debug(error)
-							return false
-						})
-					// If we found the task, we don't need to query the other calendars.
-					if (found) {
-						break
+					try {
+						const found = await this.getTaskByUri({ calendar: calendar, taskUri: this.$route.params.taskId })
+							.then((response) => {
+								if (response) {
+									this.loading = false
+									return true
+								} else {
+									return false
+								}
+							})
+						// If we found the task, we don't need to query the other calendars.
+						if (found) {
+							break
+						}
+					} catch {
+						console.debug('Task ' + this.$route.params.taskId + ' not found in calendar ' + calendar.displayName + '.')
 					}
 				}
 				this.loading = false

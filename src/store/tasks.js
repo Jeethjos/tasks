@@ -745,6 +745,15 @@ const actions = {
 						}
 						context.commit('addTaskToParent', { task: task, parent: parent })
 					}
+
+					// In case we already have subtasks of this task in the store, add them as well.
+					const subTasksInStore = context.getters.getTasksByParent(task)
+					subTasksInStore.forEach(
+						subTask => {
+							context.commit('addTaskToParent', { task: subTask, parent: task })
+						}
+					)
+
 					context.commit('appendTasksToCalendar', { calendar: calendar, tasks: [task] })
 					context.commit('appendTasks', [task])
 					return task
@@ -782,6 +791,15 @@ const actions = {
 						}
 						context.commit('addTaskToParent', { task: task, parent: parent })
 					}
+
+					// In case we already have subtasks of this task in the store, add them as well.
+					const subTasksInStore = context.getters.getTasksByParent(task)
+					subTasksInStore.forEach(
+						subTask => {
+							context.commit('addTaskToParent', { task: subTask, parent: task })
+						}
+					)
+
 					context.commit('appendTasksToCalendar', { calendar: calendar, tasks: [task] })
 					context.commit('appendTasks', [task])
 					return task

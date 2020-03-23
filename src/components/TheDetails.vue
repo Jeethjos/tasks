@@ -372,6 +372,11 @@ License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 				<button class="close-all reactive inline" @click="closeDetails">
 					<span class="icon icon-sprt-bw sprt-hide" />
 				</button>
+				<a style="padding:7px 7px;margin:5px 10px 16px 6px;float:right"
+					class="close-all reactive button primary"
+					@click="closeDetails">
+					Done
+				</a>
 			</div>
 		</div>
 		<div v-else class="notice">

@@ -22,6 +22,11 @@ License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 <template>
 	<div v-if="calendar">
+		<div class="app-task-head">
+			<h1>
+				<span style="font-weight: normal;">
+					Manage the tasks in the list - </span> {{ titleString }} </h1>
+		</div>
 		<div class="header">
 			<div v-if="!calendar.readOnly"
 				id="add-task"
@@ -114,6 +119,9 @@ export default {
 
 		inputString: function() {
 			return this.$t('tasks', 'Add a task to "{task}"…', { task: this.calendar.displayName })
+		},
+		titleString: function() {
+			return this.$t('tasks', '{task}', { task: this.calendar.displayName })
 		},
 
 		/**

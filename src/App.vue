@@ -29,6 +29,24 @@ License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 		</AppNavigation>
 
 		<AppContent>
+			<div v-if="this.$route.params.collectionId=='starred'" class="app-task-head" style="height:20px">
+				<h1>Important tasks</h1>
+			</div>
+			<div v-if="this.$route.params.collectionId=='today'" class="app-task-head" style="height:20px">
+				<h1>Today's tasks</h1>
+			</div>
+			<div v-if="this.$route.params.collectionId=='week'" class="app-task-head" style="height:20px">
+				<h1>This week's tasks</h1>
+			</div>
+			<div v-if="this.$route.params.collectionId=='all'" class="app-task-head" style="height:20px">
+				<h1>All tasks</h1>
+			</div>
+			<div v-if="this.$route.params.collectionId=='current'" class="app-task-head" style="height:20px">
+				<h1>Current tasks</h1>
+			</div>
+			<div v-if="this.$route.params.collectionId=='completed'" class="app-task-head" style="height:20px">
+				<h1>Completed tasks</h1>
+			</div>
 			<RouterView />
 		</AppContent>
 
